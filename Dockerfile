@@ -4,7 +4,7 @@ FROM ubuntu:18.04
 
 # Install base dependencies and update apt-get sources
 RUN apt-get update && \
-    apt-get install -y --no-install-recommends build-essential curl wget git gnupg2 ca-certificates locales command-not-found && \
+    apt-get install -y --no-install-recommends build-essential curl wget zsh vim unzip git gnupg2 ca-certificates locales command-not-found && \
     curl -fsSL https://developer.download.nvidia.com/compute/cuda/repos/ubuntu1804/x86_64/7fa2af80.pub | apt-key add - && \
     echo "deb https://developer.download.nvidia.com/compute/cuda/repos/ubuntu1804/x86_64 /" > /etc/apt/sources.list.d/cuda.list && \
     echo "deb https://developer.download.nvidia.com/compute/machine-learning/repos/ubuntu1804/x86_64 /" > /etc/apt/sources.list.d/nvidia-ml.list
@@ -63,6 +63,12 @@ RUN mkdir -p "$GOPATH/src" "$GOPATH/bin" && chmod -R 777 "$GOPATH"
 # More common build tools (likely can be moved back up top but not doing so yet to speed up development of the Dockerfile)
 RUN apt-get install -y --no-install-recommends python3 python3-pip python3-venv cmake python3-dev
 
+# AWS CLI
+RUN apt-get install -y unzip && \
+    curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip" && \
+    unzip awscliv2.zip && \
+    ./aws/install
+
 # Set default language 
 ENV LANG en_US.UTF-8  
 ENV LANGUAGE en_US:en  
@@ -70,9 +76,25 @@ ENV LC_ALL en_US.UTF-8
 RUN sed -i -e 's/# en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/' /etc/locale.gen && \
     locale-gen
 
-# Vim + extensions
-RUN apt-get install -y --no-install-recommends vim && \
-    git clone https://github.com/kurtb/dotvim.git ~/.vim && \
+# Anaconda
+RUN wget --quiet https://repo.anaconda.com/archive/Anaconda3-2020.02-Linux-x86_64.sh -O conda.sh && \
+    /usr/bin/zsh conda.sh -b -p /opt/conda && \
+    rm conda.sh
+
+# Create a user in the container to represent the local user running the container. And then run the remaining commands
+# as this user.
+
+# Add a user/group 1000:1000 (which most likely maps to the local user) so that home, etc... will work
+ARG USER=kurtb
+ARG UID=1000
+ARG GID=1000
+RUN groupadd --gid ${GID} ${USER} && \
+    useradd --uid ${UID} --gid ${USER} --shell /usr/bin/zsh --create-home ${USER}
+
+USER ${USER}
+
+# Vim Extensions
+RUN git clone https://github.com/kurtb/dotvim.git ~/.vim && \
     cd ~/.vim && \
     git submodule update --init --recursive && \
     cd .. && \
@@ -81,18 +103,16 @@ RUN apt-get install -y --no-install-recommends vim && \
     python3 install.py --all 
 
 # Zsh
-RUN apt-get install -y --no-install-recommends zsh && \
-    git clone https://github.com/kurtb/dotzsh.git ~/dotzsh && \
+RUN git clone https://github.com/kurtb/dotzsh.git ~/dotzsh && \
     cd ~/dotzsh && \
     bash ./install.sh && \
     cd .. && \
     ln -s -f $(pwd)/dotzsh/.zshrc ~/.zshrc
 
-# Anaconda
-RUN wget --quiet https://repo.anaconda.com/archive/Anaconda3-2020.02-Linux-x86_64.sh -O conda.sh && \
-    /usr/bin/zsh conda.sh -b -p /opt/conda && \
-    rm conda.sh && \
-    /opt/conda/bin/conda init zsh && \
+# Init Anaconda (done following zsh init)
+RUN /opt/conda/bin/conda init zsh && \
     /opt/conda/bin/conda config --set auto_activate_base false
+
+WORKDIR /home/${USER}
 
 ENTRYPOINT ["/usr/bin/zsh"]
