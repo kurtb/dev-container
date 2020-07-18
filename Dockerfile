@@ -119,6 +119,6 @@ RUN git clone https://github.com/kurtb/dotzsh.git ~/dotzsh && \
 RUN /opt/conda/bin/conda init zsh && \
     /opt/conda/bin/conda config --set auto_activate_base false
 
-WORKDIR /home/${USER}
+WORKDIR /home/${USERNAME}
 
 ENTRYPOINT ["/usr/bin/zsh"]
