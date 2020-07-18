@@ -85,13 +85,19 @@ RUN wget --quiet https://repo.anaconda.com/archive/Anaconda3-2020.02-Linux-x86_6
 # as this user.
 
 # Add a user/group 1000:1000 (which most likely maps to the local user) so that home, etc... will work
-ARG USER=kurtb
+ARG USERNAME=kurtb
 ARG UID=1000
-ARG GID=1000
-RUN groupadd --gid ${GID} ${USER} && \
-    useradd --uid ${UID} --gid ${USER} --shell /usr/bin/zsh --create-home ${USER}
+ARG GID=$UID
+RUN groupadd --gid ${GID} ${USERNAME} && \
+    useradd --uid ${UID} --gid ${USERNAME} --shell /usr/bin/zsh --create-home ${USERNAME} && \
+    #
+    # [Optional] Add sudo support. Omit if you don't need to install software after connecting.
+    apt-get update && \
+    apt-get install -y sudo && \
+    echo $USERNAME ALL=\(root\) NOPASSWD:ALL > /etc/sudoers.d/$USERNAME && \
+    chmod 0440 /etc/sudoers.d/$USERNAME
 
-USER ${USER}
+USER ${USERNAME}
 
 # Vim Extensions
 RUN git clone https://github.com/kurtb/dotvim.git ~/.vim && \
