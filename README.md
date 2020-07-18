@@ -23,4 +23,10 @@ But just switching the user ID causes issues around home directories, etc...
 https://medium.com/redbubble/running-a-docker-container-as-a-non-root-user-7d2e00f8ee15
 https://medium.com/faun/set-current-host-user-for-docker-container-4e521cef9ffc
 
+## Passing in AWS Credentials
 
+https://ryanparman.com/posts/2019/running-aws-vault-with-local-docker-containers/
+
+For instance if you have a profile named eng the below will work
+
+docker run --rm --gpus all --env-file <(aws-vault exec eng -- env | grep --color=never ^AWS_) -it -u $(id -u):$(id -g) dev-container
