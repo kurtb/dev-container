@@ -1,5 +1,9 @@
 FROM ubuntu:18.04
 
+# To indicate all apt installs are not interactive
+# https://unix.stackexchange.com/questions/313665/debconf-error-messages-from-apt-get-install-line-in-dockerfile
+ARG DEBIAN_FRONTEND=noninteractive
+
 # CUDA+CUDNN steps taken from https://gitlab.com/nvidia/container-images/cuda/-/blob/master/dist/ubuntu18.04/10.1
 
 # Install base dependencies and update apt-get sources
@@ -51,7 +55,7 @@ ENV NODE_VERSION 12
 
 # Node 12
 RUN curl -sL https://deb.nodesource.com/setup_$NODE_VERSION.x | bash - && \
-    apt-get install -y nodejs
+    apt-get install -y --no-install-recommends nodejs
 
 # GO
 ENV GOLANG_VERSION 1.14.4
@@ -64,7 +68,7 @@ RUN mkdir -p "$GOPATH/src" "$GOPATH/bin" && chmod -R 777 "$GOPATH"
 RUN apt-get install -y --no-install-recommends python3 python3-pip python3-venv cmake python3-dev
 
 # AWS CLI
-RUN apt-get install -y unzip && \
+RUN apt-get install -y --no-install-recommends unzip && \
     curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip" && \
     unzip awscliv2.zip && \
     ./aws/install
@@ -107,7 +111,7 @@ RUN groupadd --gid ${GID} ${USERNAME} && \
     #
     # [Optional] Add sudo support. Omit if you don't need to install software after connecting.
     apt-get update && \
-    apt-get install -y sudo && \
+    apt-get install -y --no-install-recommends sudo && \
     echo $USERNAME ALL=\(root\) NOPASSWD:ALL > /etc/sudoers.d/$USERNAME && \
     chmod 0440 /etc/sudoers.d/$USERNAME
 
