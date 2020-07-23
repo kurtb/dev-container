@@ -4,7 +4,7 @@ FROM ubuntu:18.04
 
 # Install base dependencies and update apt-get sources
 RUN apt-get update && \
-    apt-get install -y --no-install-recommends build-essential curl wget zsh vim unzip git gnupg2 ca-certificates locales command-not-found && \
+    apt-get install -y --no-install-recommends build-essential curl wget zsh vim emacs unzip git gnupg2 ca-certificates locales command-not-found && \
     curl -fsSL https://developer.download.nvidia.com/compute/cuda/repos/ubuntu1804/x86_64/7fa2af80.pub | apt-key add - && \
     echo "deb https://developer.download.nvidia.com/compute/cuda/repos/ubuntu1804/x86_64 /" > /etc/apt/sources.list.d/cuda.list && \
     echo "deb https://developer.download.nvidia.com/compute/machine-learning/repos/ubuntu1804/x86_64 /" > /etc/apt/sources.list.d/nvidia-ml.list
@@ -76,6 +76,20 @@ ENV LC_ALL en_US.UTF-8
 RUN sed -i -e 's/# en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/' /etc/locale.gen && \
     locale-gen
 
+# SSH access
+# https://docs.docker.com/engine/examples/running_ssh_service/
+# An SSH server is not a best practice but we do this so we can get remote SSH access
+# to the container for tools like VS Code. It's sometimes nice to use the Remote-SSH
+# extension to gain access to a box. But then you'd like to then make use of the Remote-Container
+# extension. But this layer of embedding isn't supported yet.
+# https://github.com/microsoft/vscode-remote-release/issues/20
+# https://github.com/microsoft/vscode-remote-release/issues/2994
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends openssh-server && \
+    mkdir /var/run/sshd
+ENV NOTVISIBLE "in users profile"
+RUN echo "export VISIBLE=now" >> /etc/profile
+
 # Anaconda
 RUN wget --quiet https://repo.anaconda.com/archive/Anaconda3-2020.02-Linux-x86_64.sh -O conda.sh && \
     /usr/bin/zsh conda.sh -b -p /opt/conda && \
@@ -85,7 +99,7 @@ RUN wget --quiet https://repo.anaconda.com/archive/Anaconda3-2020.02-Linux-x86_6
 # as this user.
 
 # Add a user/group 1000:1000 (which most likely maps to the local user) so that home, etc... will work
-ARG USERNAME=kurtb
+ARG USERNAME=dev
 ARG UID=1000
 ARG GID=$UID
 RUN groupadd --gid ${GID} ${USERNAME} && \
@@ -97,6 +111,7 @@ RUN groupadd --gid ${GID} ${USERNAME} && \
     echo $USERNAME ALL=\(root\) NOPASSWD:ALL > /etc/sudoers.d/$USERNAME && \
     chmod 0440 /etc/sudoers.d/$USERNAME
 
+# Switch to the default user to setup vim/zsh/etc... extensions
 USER ${USERNAME}
 
 # Vim Extensions
@@ -121,4 +136,8 @@ RUN /opt/conda/bin/conda init zsh && \
 
 WORKDIR /home/${USERNAME}
 
-ENTRYPOINT ["/usr/bin/zsh"]
+# Switch back to root for launching the SSH server
+USER root
+
+EXPOSE 22
+CMD ["/usr/sbin/sshd", "-D"]

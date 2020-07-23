@@ -10,6 +10,7 @@ These include...
 * Python 3
 * Anaconda
 * Vim + Oh My Zsh + Extensions
+* Emacs
 * AWS CLI
 
 ## Dev container
@@ -30,3 +31,18 @@ https://ryanparman.com/posts/2019/running-aws-vault-with-local-docker-containers
 For instance if you have a profile named eng the below will work
 
 docker run --rm --gpus all --env-file <(aws-vault exec eng -- env | grep --color=never ^AWS_) -it -u $(id -u):$(id -g) dev-container
+
+## SSH keys
+
+You can mount your authorized_keys into the container to make ssh'ing into it easy
+
+From a remote box to the host you can do
+`ssh-copy-id user@host`
+
+Or if local
+`cat <your_public_key_file> >> ~/.ssh/authorized_keys`
+
+## Running
+`docker run --rm --gpus all -d -v $(pwd):/workspace -v /home/kurtb/.ssh/authorized_keys:/home/dev/.ssh/authorized_keys -p 8022:22 dev-container`
+
+You can then connect to it from VS Code, etc...
