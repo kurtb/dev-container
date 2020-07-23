@@ -46,3 +46,9 @@ Or if local
 `docker run --rm --gpus all -d -v $(pwd):/workspace -v /home/kurtb/.ssh/authorized_keys:/home/dev/.ssh/authorized_keys -p 8022:22 dev-container`
 
 You can then connect to it from VS Code, etc...
+
+To get a shell simply launch with /usr/bin/zsh, or with SSH and a shell, service restart sshd && /user/bin/zsh
+
+`docker run --rm -it --gpus all -v $(pwd):/workspace -v /home/kurtb/.ssh/authorized_keys:/home/dev/.ssh/authorized_keys -p 8022:22 -u dev dev-container zsh`
+
+`docker run --rm -it --gpus all -v $(pwd):/workspace -v /home/kurtb/.ssh/authorized_keys:/home/dev/.ssh/authorized_keys -p 8022:22 -u dev dev-container sh -c "sudo service ssh restart && zsh" `
