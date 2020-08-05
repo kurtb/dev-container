@@ -43,7 +43,9 @@ Or if local
 `cat <your_public_key_file> >> ~/.ssh/authorized_keys`
 
 ## Running
-`docker run --rm --gpus all -d -v $(pwd):/workspace -v /home/kurtb/.ssh/authorized_keys:/home/dev/.ssh/authorized_keys -p 8022:22 dev-container`
+`docker run --gpus all -d -v $(pwd):/workspace -v /home/kurtb/.ssh/authorized_keys:/home/dev/.ssh/authorized_keys -p 8022:22 dev-container`
+
+Note in the case of running the SSH server in the background (i.e. similar to a pure VM) we omit the `--rm` command so that it can be stopped/started on demand. This allows you to preserve changes to the container across runs. For instance - the VS Code remote extension installs.
 
 You can then connect to it from VS Code, etc...
 
@@ -52,3 +54,11 @@ To get a shell simply launch with /usr/bin/zsh, or with SSH and a shell, service
 `docker run --rm -it --gpus all -v $(pwd):/workspace -v /home/kurtb/.ssh/authorized_keys:/home/dev/.ssh/authorized_keys -p 8022:22 -u dev dev-container zsh`
 
 `docker run --rm -it --gpus all -v $(pwd):/workspace -v /home/kurtb/.ssh/authorized_keys:/home/dev/.ssh/authorized_keys -p 8022:22 -u dev dev-container sh -c "sudo service ssh restart && zsh" `
+
+## Useful tips & tricks
+
+So that DNS resolution can work it's helpful to create and connect to a custom network. This can be created with
+
+`docker network create dev-network`
+
+And then using the `--network dev-network` parameter when running the container.
