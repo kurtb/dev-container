@@ -138,6 +138,9 @@ RUN git clone https://github.com/kurtb/dotzsh.git ~/dotzsh && \
 RUN /opt/conda/bin/conda init zsh && \
     /opt/conda/bin/conda config --set auto_activate_base false
 
+# Create the .ssh directory so that it exists as the default user
+RUN mkdir /home/${USERNAME}/.ssh
+
 WORKDIR /home/${USERNAME}
 
 # Switch back to root for launching the SSH server
