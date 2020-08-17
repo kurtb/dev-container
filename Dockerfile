@@ -146,5 +146,8 @@ WORKDIR /home/${USERNAME}
 # Switch back to root for launching the SSH server
 USER root
 
+# Extra tools
+RUN apt-get install -y --no-install-recommends libpq-dev
+
 EXPOSE 22
 CMD ["/usr/sbin/sshd", "-D"]
