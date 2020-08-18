@@ -147,7 +147,7 @@ WORKDIR /home/${USERNAME}
 USER root
 
 # Extra tools
-RUN apt-get install -y --no-install-recommends libpq-dev
+RUN apt-get install -y --no-install-recommends postgresql-client libpq-dev
 
 EXPOSE 22
 CMD ["/usr/sbin/sshd", "-D"]
