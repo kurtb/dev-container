@@ -152,5 +152,15 @@ RUN echo "deb http://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg ma
     apt-get update && \
     apt-get install -y --no-install-recommends postgresql-client libpq-dev
 
+# Delete all the SSH host keys and then copy the startup script. The script will regenerate these
+# keys on first boot. By then mounting the volume we can preserve them across dev container
+# instances.
+RUN rm /etc/ssh/ssh_host_*
+COPY startup.sh /root/startup.sh
+
+# Volumes for the home directory as well as root SSL certs so we can preserve both
+# across runs or upgrades
+VOLUME ["/home/${USERNAME}", "/etc/ssh/"]
+
 EXPOSE 22
-CMD ["/usr/sbin/sshd", "-D"]
+CMD ["/root/startup.sh"]
