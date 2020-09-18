@@ -8,39 +8,45 @@ ARG DEBIAN_FRONTEND=noninteractive
 
 # Install base dependencies and update apt-get sources
 RUN apt-get update && \
-    apt-get install -y --no-install-recommends build-essential curl wget zsh vim emacs unzip git gnupg2 ca-certificates locales command-not-found && \
+    apt-get install -y --no-install-recommends build-essential curl wget zsh vim emacs unzip git gnupg2 ca-certificates locales command-not-found tree && \
     curl -fsSL https://developer.download.nvidia.com/compute/cuda/repos/ubuntu1804/x86_64/7fa2af80.pub | apt-key add - && \
     echo "deb https://developer.download.nvidia.com/compute/cuda/repos/ubuntu1804/x86_64 /" > /etc/apt/sources.list.d/cuda.list && \
     echo "deb https://developer.download.nvidia.com/compute/machine-learning/repos/ubuntu1804/x86_64 /" > /etc/apt/sources.list.d/nvidia-ml.list
 
-ENV CUDA_VERSION 10.1.243
-ENV CUDA_PKG_VERSION 10-1=$CUDA_VERSION-1
-ENV NCCL_VERSION 2.4.8
-ENV CUDNN_VERSION 7.6.5.32 
+ENV CUDA_VERSION 10.2.89
+ENV CUDA_PKG_VERSION 10-2=$CUDA_VERSION-1
+ENV NCCL_VERSION 2.7.8
+ENV CUDNN_7_VERSION 7.6.5.32
+ENV CUDNN_8_VERSION 8.0.2.39
 
 # For libraries in the cuda-compat-* package: https://docs.nvidia.com/cuda/eula/index.html#attachment-a
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
         # Base CUDA
         cuda-cudart-$CUDA_PKG_VERSION \
-        cuda-compat-10-1 \
+        cuda-compat-10-2 \
         # Runtime
         cuda-libraries-$CUDA_PKG_VERSION \
+        cuda-npp-$CUDA_PKG_VERSION \
         cuda-nvtx-$CUDA_PKG_VERSION \
-        libcublas10=10.2.1.243-1 \
-        libnccl2=$NCCL_VERSION-1+cuda10.1 \
+        libcublas10=10.2.2.89-1 \
+        libnccl2=$NCCL_VERSION-1+cuda10.2 \
         # Devel
         cuda-nvml-dev-$CUDA_PKG_VERSION \
         cuda-command-line-tools-$CUDA_PKG_VERSION \
+        cuda-nvprof-$CUDA_PKG_VERSION \
+        cuda-npp-dev-$CUDA_PKG_VERSION \
         cuda-libraries-dev-$CUDA_PKG_VERSION \
         cuda-minimal-build-$CUDA_PKG_VERSION \
-        libnccl-dev=$NCCL_VERSION-1+cuda10.1 \
-        libcublas-dev=10.2.1.243-1 \
+        libcublas-dev=10.2.2.89-1 \
+        libnccl-dev=2.7.8-1+cuda10.2 \
         # CUDNN 
-        libcudnn7=$CUDNN_VERSION-1+cuda10.1 \
-        libcudnn7-dev=$CUDNN_VERSION-1+cuda10.1 && \
-    apt-mark hold libnccl2 libcudnn7 && \
-    ln -s cuda-10.1 /usr/local/cuda
+        libcudnn7=$CUDNN_7_VERSION-1+cuda10.2 \
+        libcudnn7-dev=$CUDNN_7_VERSION-1+cuda10.2 \
+        libcudnn8=$CUDNN_8_VERSION-1+cuda10.2 \
+        libcudnn8-dev=$CUDNN_8_VERSION-1+cuda10.2 && \
+    apt-mark hold libnccl2 libcudnn7 libcudnn8 libnccl-dev && \
+    ln -s cuda-10.2 /usr/local/cuda
 
 ENV PATH /usr/local/nvidia/bin:/usr/local/cuda/bin:${PATH}
 ENV LD_LIBRARY_PATH /usr/local/nvidia/lib:/usr/local/nvidia/lib64
@@ -49,7 +55,7 @@ ENV LIBRARY_PATH /usr/local/cuda/lib64/stubs
 # nvidia-container-runtime
 ENV NVIDIA_VISIBLE_DEVICES all
 ENV NVIDIA_DRIVER_CAPABILITIES compute,utility
-ENV NVIDIA_REQUIRE_CUDA "cuda>=10.1 brand=tesla,driver>=384,driver<385 brand=tesla,driver>=396,driver<397 brand=tesla,driver>=410,driver<411"
+ENV NVIDIA_REQUIRE_CUDA "cuda>=10.2 brand=tesla,driver>=396,driver<397 brand=tesla,driver>=410,driver<411 brand=tesla,driver>=418,driver<419 brand=tesla,driver>=440,driver<441"
 
 ENV NODE_VERSION 12
 
