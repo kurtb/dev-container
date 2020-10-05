@@ -57,7 +57,7 @@ ENV NVIDIA_VISIBLE_DEVICES all
 ENV NVIDIA_DRIVER_CAPABILITIES compute,utility
 ENV NVIDIA_REQUIRE_CUDA "cuda>=10.2 brand=tesla,driver>=396,driver<397 brand=tesla,driver>=410,driver<411 brand=tesla,driver>=418,driver<419 brand=tesla,driver>=440,driver<441"
 
-ENV NODE_VERSION 12
+ENV NODE_VERSION 14
 
 # Node 12
 RUN curl -sL https://deb.nodesource.com/setup_$NODE_VERSION.x | bash - && \
