@@ -64,7 +64,7 @@ RUN curl -sL https://deb.nodesource.com/setup_$NODE_VERSION.x | bash - && \
     apt-get install -y --no-install-recommends nodejs
 
 # GO
-ENV GOLANG_VERSION 1.14.4
+ENV GOLANG_VERSION 1.15.2
 RUN curl -sL "https://golang.org/dl/go${GOLANG_VERSION}.linux-amd64.tar.gz" | tar xzf - -C /usr/local 
 ENV GOPATH /go
 ENV PATH $GOPATH/bin:/usr/local/go/bin:$PATH
@@ -136,6 +136,7 @@ RUN git clone https://github.com/kurtb/dotvim.git ~/.vim && \
 # Zsh
 RUN git clone https://github.com/kurtb/dotzsh.git ~/dotzsh && \
     cd ~/dotzsh && \
+    git submodule update --init --recursive && \
     bash ./install.sh && \
     cd .. && \
     ln -s -f $(pwd)/dotzsh/.zshrc ~/.zshrc
