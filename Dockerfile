@@ -8,7 +8,7 @@ ARG DEBIAN_FRONTEND=noninteractive
 
 # Install base dependencies and update apt-get sources
 RUN apt-get update && \
-    apt-get install -y --no-install-recommends build-essential curl wget zsh vim emacs unzip git gnupg2 ca-certificates locales command-not-found tree && \
+    apt-get install -y --no-install-recommends build-essential curl wget zsh vim emacs unzip git gnupg2 ca-certificates locales command-not-found tree python python3 python3-pip python3-venv cmake python3-dev && \
     curl -fsSL https://developer.download.nvidia.com/compute/cuda/repos/ubuntu1804/x86_64/7fa2af80.pub | apt-key add - && \
     echo "deb https://developer.download.nvidia.com/compute/cuda/repos/ubuntu1804/x86_64 /" > /etc/apt/sources.list.d/cuda.list && \
     echo "deb https://developer.download.nvidia.com/compute/machine-learning/repos/ubuntu1804/x86_64 /" > /etc/apt/sources.list.d/nvidia-ml.list
@@ -69,9 +69,6 @@ RUN curl -sL "https://golang.org/dl/go${GOLANG_VERSION}.linux-amd64.tar.gz" | ta
 ENV GOPATH /go
 ENV PATH $GOPATH/bin:/usr/local/go/bin:$PATH
 RUN mkdir -p "$GOPATH/src" "$GOPATH/bin" && chmod -R 777 "$GOPATH"
-
-# More common build tools (likely can be moved back up top but not doing so yet to speed up development of the Dockerfile)
-RUN apt-get install -y --no-install-recommends python3 python3-pip python3-venv cmake python3-dev
 
 # AWS CLI
 RUN apt-get install -y --no-install-recommends unzip && \
